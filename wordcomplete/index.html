@@ -1,0 +1,94 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz App</title>
+    <style>
+        #text {
+            font-size: 22pt;
+            font-family: 'Arial', sans-serif; /* Modern Font */
+            border: 2px solid black;
+            margin: 20px;
+            padding: 20px;
+            white-space: pre-line; /* Keep original line breaks */
+        }
+        #text span.missing {
+            color: red;
+        }
+        input[type="text"] {
+            font-size: 24pt;
+        }
+        input[type="text"].wrong {
+            border-color: red;
+            background-color: #ffe6e6;
+        }
+        #score {
+            font-size: 30pt;
+            text-align: center;
+            margin-top: 20px;
+        }
+        .star {
+            color: gold;
+        }
+    </style>
+</head>
+<body>
+<div id="text"></div>
+<div id="score"><span class="star">★</span> 0</div>
+
+<script>
+    const originalText = `Sedimentary rocks are formed from sediments that have settled at the bottom of a *lake, sea or *ocean, and have been compressed over *millions of years.
+
+    The sediment comes from *eroded rocks carried there by *rivers or ice, and from the *skeletons of sea creatures.
+
+    Examples of sedimentary rocks include *limestone and *sandstone.
+
+    The rocks are formed due to the build-up of *sediments over time. The *weathered and eroded material is built up in *layers. 
+
+    As more material is added on top – this will push any air and/or water out and will *compact the material together into a *hard rock. These often contain *fossils of *plants and *animals`;
+
+    const text = originalText.replace(/\*/g, ''); // Remove asterisks from display text
+    const words = originalText.split(' ');
+    const asteriskedWords = words.filter(word => word.startsWith('*')).map(word => word.substring(1));
+
+    let score = 0;
+
+    function updateScore() {
+        document.getElementById('score').innerHTML = `<span class="star">★</span> ${score}`;
+    }
+
+    function displayTextWithMissingWord() {
+        const missingWord = asteriskedWords[Math.floor(Math.random() * asteriskedWords.length)];
+        const displayText = text.replace(missingWord, `<span class="missing">${missingWord.charAt(0)}<input type="text" data-word="${missingWord}" value="" size="${missingWord.length - 2}" autofocus>${missingWord.charAt(missingWord.length - 1)}</span>`);
+        
+    document.getElementById('text').innerHTML = displayText;
+    document.querySelector('input[type="text"]').focus();  // Add focus programmatically
+    
+
+        const inputBox = document.querySelector('input[type="text"]');
+        inputBox.addEventListener('keyup', function(event) {
+            if (event.key === 'Enter') {
+                const userAnswer = missingWord.charAt(0) + inputBox.value + missingWord.charAt(missingWord.length - 1);
+                if (userAnswer.includes(missingWord)) {
+                    score++;
+                    updateScore();
+                    displayTextWithMissingWord();
+                } else {
+                    score = 0;
+                    updateScore();
+                    inputBox.classList.add('wrong');
+                }
+            }
+        });
+
+        inputBox.addEventListener('input', function() {
+            inputBox.classList.remove('wrong');
+        });
+    }
+
+    displayTextWithMissingWord();
+</script>
+</body>
+</html>
