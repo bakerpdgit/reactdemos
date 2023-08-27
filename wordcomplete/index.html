@@ -35,7 +35,10 @@
     </style>
 </head>
 <body>
-<div id="text"></div>
+
+    <h1 style="font-size: 22pt; font-family: 'Arial', sans-serif; text-align: center; font-weight: bold;">Sedimentary Rocks</h1>
+    <div id="text"></div>
+    
 <div id="score"><span class="star">★</span> 0</div>
 
 <script>
@@ -49,9 +52,18 @@
 
     As more material is added on top – this will push any air and/or water out and will *compact the material together into a *hard rock. These often contain *fossils of *plants and *animals`;
 
-    const text = originalText.replace(/\*/g, ''); // Remove asterisks from display text
+    
+    const text = originalText.replace(/\*([a-zA-Z]+)([.,!?]?)/g, function(match, word, punctuation) {
+        return word + punctuation;
+    });
+     // Remove asterisks from display text
     const words = originalText.split(' ');
-    const asteriskedWords = words.filter(word => word.startsWith('*')).map(word => word.substring(1));
+    
+    
+    let lastWord = "";
+    const asteriskedWords = words.filter(word => word.startsWith('*')).map(word => word.substring(1).match(/[a-zA-Z]+/)[0]);
+     // Remove trailing punctuation
+    
 
     let score = 0;
 
@@ -60,7 +72,13 @@
     }
 
     function displayTextWithMissingWord() {
-        const missingWord = asteriskedWords[Math.floor(Math.random() * asteriskedWords.length)];
+        
+    let missingWord;
+    do {
+        missingWord = asteriskedWords[Math.floor(Math.random() * asteriskedWords.length)];
+    } while (missingWord === lastWord);
+    lastWord = missingWord;
+    
         const displayText = text.replace(missingWord, `<span class="missing">${missingWord.charAt(0)}<input type="text" data-word="${missingWord}" value="" size="${missingWord.length - 2}" autofocus>${missingWord.charAt(missingWord.length - 1)}</span>`);
         
     document.getElementById('text').innerHTML = displayText;
