@@ -42,15 +42,42 @@
 <div id="score"><span class="star">★</span> 0</div>
 
 <script>
-    const originalText = `Sedimentary rocks are formed from sediments that have settled at the bottom of a *lake, sea or *ocean, and have been compressed over *millions of years.
+    const originalText = `*Character Code:
+A binary bit-*pattern used to represent a character of *text
 
-    The sediment comes from *eroded rocks carried there by *rivers or ice, and from the *skeletons of sea creatures.
+Character Set:
+The *collection of all characters & their associated bit-pattern *codes
 
-    Examples of sedimentary rocks include *limestone and *sandstone.
+*ASCII:
+The standard *seven-bit *character set for the Latin alphabet, digits & *symbols (American Standard Code for Information Interchange)
+*Pixel:
+The *smallest element of *colour in a *bitmap image, normally arranged in a two-dimensional grid. It is short for 'picture *element'. If an image's physical size remains constant, then the more pixels there are, the sharper and more *detailed the image is.
 
-    The rocks are formed due to the build-up of *sediments over time. The *weathered and eroded material is built up in *layers. 
+*Bitmap:
+A matrix of picture *elements which make up a *digital image composed of tiny blocks of *colour (pixels) which are *encoded one after the other in *binary.
 
-    As more material is added on top – this will push any air and/or water out and will *compact the material together into a *hard rock. These often contain *fossils of *plants and *animals`;
+Colour *Depth:
+Refers to the number of *bits used to represent the *colour of each individual *pixel. The more bits used, the *greater the number of *colours / tones that can be represented.
+
+*Image Size:
+The size as measured by the *width x *height count of its *pixels.
+
+*Resolution:
+A measurement of bitmap image detail when displayed, normally given as the number of *pixels per *inch (ppi). It determines the *size of an image when it is displayed on *screen or *printed on paper. A *2000 x *1000 pixel bitmap with a resolution of *200 ppi will measure 10" x 5" when displayed on a screen, whereas, with a resolution of *100 ppi, it will measure 20" x 10". The *higher the resolution the more *detail an image has.
+
+Data *Compression:
+The process of *reducing the storage size of files, normally for use online using utility software.
+
+*Lossless Compression:
+Compressing a file in such a way that it can be *decompressed without any *loss of data to its *orginal state. The file size is not as significantly *reduced as with *lossy compression.
+
+Lossy Compression:
+some of the data is *permanently *removed; the original file *cannot be *fully restored when the lossy file is decompressed. It can result in a much *smaller file size than through *lossless compression by *removing some of the *data.
+
+JPEG:
+*Lossy compression *bitmap *format most commonly used for storing digital *photographs
+`;
+
     
     const text = originalText.replace(/\*([a-zA-Z0-9]+)([.,!?-]?)/g, function(match, word, punctuation) {
         return word + punctuation;
