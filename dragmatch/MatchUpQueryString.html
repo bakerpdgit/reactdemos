@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lz-string/1.4.4/lz-string.min.js"></script>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Matching Drag &amp; Drop Game</title>
+    <style>
+      body {
+        background-color: #e0f7fa;
+      }
+      #gameArea {
+        display: flex;
+        justify-content: space-between;
+        font-size: 1em;
+        font-family: "Arial", sans-serif;
+        border: 2px solid black;
+        margin: 20px;
+        padding: 20px;
+        white-space: pre-line;
+      }
+      #terms,
+      #definitions {
+        display: flex;
+        flex-direction: column;
+      }
+      #terms {
+        flex-basis: 25%;
+      }
+      #definitions {
+        flex-basis: 75%;
+      }
+      .draggable,
+      .droppable {
+        height: 80px;
+        background-color: white;
+        margin: 5px;
+        padding: 5px;
+        border: 1px solid black;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .draggable {
+        cursor: pointer;
+      }
+      .correct {
+        background-color: #a5d6a7; /* Green flash */
+      }
+      .wrong {
+        background-color: #ef9a9a; /* Red flash */
+      }
+
+      #titleheading {
+        font-size: 22pt;
+        font-family: "Arial", sans-serif;
+        text-align: center;
+        font-weight: bold;
+      }
+
+      #emoji {
+        font-size: 100pt;
+        text-align: center;
+        display: none;
+      }
+      #inputArea {
+        display: none;
+        text-align: center;
+        width: 100%;
+        margin: 0 auto;
+      }
+      #instructions {
+        text-align: center;
+      }
+      #textAreaInput {
+        width: 100%;
+        margin: 20px;
+      }
+    </style>
+  </head>
+
+  <body>
+    <h1 id="titleheading">Terms Match-Up</h1>
+    <div id="emoji">😃</div>
+    <div id="inputArea">
+      <label for="playTuneCheckbox">Play tune on completion</label
+      ><input checked="True" id="playTuneCheckbox" type="checkbox" />
+      <p id="instructions">
+        This exercise requires some terms &amp; definitions separated as
+        shown... complete these and then use the link to generate the activity.
+      </p>
+      <textarea cols="50" id="textAreaInput" rows="30">
+First Term
+Definition of first term
+
+Second Term
+Definition of second term
+</textarea
+      >
+      <button onclick="generateLink()">Generate Link</button>
+    </div>
+    <div id="gameArea">
+      <div id="terms"></div>
+      <div id="definitions"></div>
+    </div>
+    <script>
+      const originalText = ``;
+
+      let audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+      function setupGame(entries) {
+        const termsContainer = document.getElementById("terms");
+        const definitionsContainer = document.getElementById("definitions");
+        termsContainer.innerHTML = "";
+        definitionsContainer.innerHTML = "";
+
+        // Step 1: Create term and definition divs with increasing data-id attributes
+        entries.forEach((entry, index) => {
+          const termDiv = document.createElement("div");
+          termDiv.innerText = entry.title;
+          termDiv.classList.add("draggable");
+          termDiv.draggable = true;
+          termDiv.setAttribute("data-id", index);
+
+          termDiv.addEventListener("dragstart", (e) => {
+            e.dataTransfer.setData(
+              "text/plain",
+              termDiv.getAttribute("data-id")
+            );
+          });
+
+          const definitionDiv = document.createElement("div");
+          definitionDiv.innerText = entry.definition;
+          definitionDiv.classList.add("droppable");
+          definitionDiv.setAttribute("data-id", index);
+
+          definitionDiv.addEventListener("dragover", (e) => {
+            e.preventDefault();
+          });
+
+          // Update the drop event listener to check for game completion
+          definitionDiv.addEventListener("drop", (e) => {
+            const droppedId = e.dataTransfer.getData("text/plain");
+            if (droppedId === definitionDiv.getAttribute("data-id")) {
+              definitionDiv.classList.add("correct");
+              const termToHide = document.querySelector(
+                `.draggable[data-id="${droppedId}"]`
+              );
+              setTimeout(() => {
+                termToHide.style.display = "none";
+                definitionDiv.style.display = "none";
+                checkGameComplete(); // Check if the game is complete after a successful match
+              }, 500);
+            } else {
+              definitionDiv.classList.add("wrong");
+              setTimeout(() => {
+                definitionDiv.classList.remove("wrong");
+              }, 500);
+            }
+          });
+
+          termsContainer.appendChild(termDiv);
+          definitionsContainer.appendChild(definitionDiv);
+        });
+
+        // Step 2: Shuffle both sets of divs
+        for (const container of [termsContainer, definitionsContainer]) {
+          const children = Array.from(container.children);
+          while (children.length) {
+            const randomIndex = Math.floor(Math.random() * children.length);
+            container.appendChild(children.splice(randomIndex, 1)[0]);
+          }
+        }
+      }
+
+      // This function checks if the game is complete
+      function checkGameComplete() {
+        const remainingTerms = document.querySelectorAll(
+          '.draggable:not([style*="display: none"])'
+        );
+        if (remainingTerms.length === 0) {
+          celebrate();
+        }
+      }
+
+      // This function handles the celebration when the game is complete
+      function celebrate() {
+        const emoji = document.getElementById("emoji");
+        emoji.style.display = "block";
+        let direction = 1;
+        let position = 0;
+
+        // Animate the emoji moving up and down
+        function animateEmoji() {
+          position += direction;
+          emoji.style.transform = `translateY(${position}px)`;
+          if (position > 10 || position < 0) direction *= -1;
+          requestAnimationFrame(animateEmoji);
+        }
+        animateEmoji();
+
+        // Play the tune
+		if(getQueryStringValue('playTune') === 'y') {
+			playTune();
+		}
+
+      }
+
+      function playTune() {
+
+        let gainNode = audioCtx.createGain();
+        gainNode.gain.setValueAtTime(0.5, audioCtx.currentTime); // set volume to 50%
+        gainNode.connect(audioCtx.destination);
+
+        const oscillator = audioCtx.createOscillator();
+        oscillator.type = "square";
+        oscillator.connect(gainNode);
+        oscillator.start();
+
+        const notes = [300, 300, 350, 350, 400, 400, 450];
+        let index = 0;
+
+        function playNote() {
+          if (index < notes.length) {
+            oscillator.frequency.setValueAtTime(
+              notes[index],
+              audioCtx.currentTime
+            );
+            index++;
+            setTimeout(playNote, 300);
+          } else {
+            oscillator.stop();
+          }
+        }
+
+        playNote();
+      }
+
+      function getQueryStringValue(key) {
+        const values = new URLSearchParams(window.location.search);
+        return values.get(key);
+      }
+
+      function compressToEncodedURIComponent(string) {
+        return encodeURIComponent(LZString.compressToBase64(string));
+      }
+
+      function decompressFromEncodedURIComponent(encodedString) {
+        return LZString.decompressFromBase64(decodeURIComponent(encodedString));
+      }
+
+      document.addEventListener("DOMContentLoaded", function () {
+        let originalText = getQueryStringValue("originalText");
+        if (originalText) {
+          originalText = decompressFromEncodedURIComponent(originalText);
+          const entries = originalText.split("\n\n").map((entry) => {
+            const [title, ...definition] = entry.split("\n");
+            return { title, definition: definition.join(" ") };
+          });
+          setupGame(entries);
+        } else {
+          // Show the textarea for user input and a button to submit
+          document.getElementById("inputArea").style.display = "block";
+        }
+      });
+
+      function generateLink() {
+        const userInput = document.getElementById("textAreaInput").value;
+        const compressedString = compressToEncodedURIComponent(userInput);
+
+        const playTuneChecked =
+          document.getElementById("playTuneCheckbox").checked;
+        const playTuneValue = playTuneChecked ? "y" : "n";
+        window.location.href =
+          window.location.pathname +
+          "?originalText=" +
+          compressedString +
+          "&playTune=" +
+          playTuneValue;
+      }
+    </script>
+  </body>
+</html>
