@@ -1,0 +1,148 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz App</title>
+    <style>
+        #text {
+            font-size: 1.3em;
+            font-family: 'Arial', sans-serif; /* Modern Font */
+            border: 2px solid black;
+            margin: 20px;
+            padding: 20px;
+            white-space: pre-line; /* Keep original line breaks */
+        }
+        #text span.missing {
+            color: red;
+        }
+        input[type="text"] {
+            font-size: 1em;
+        }
+        input[type="text"].wrong {
+            border-color: red;
+            background-color: #ffe6e6;
+        }
+        #score {
+            font-size: 2em;
+            text-align: center;
+            margin-top: 20px;
+        }
+        .star {
+            color: gold;
+        }
+    </style>
+</head>
+<body>
+
+    <h1 style="font-size: 22pt; font-family: 'Arial', sans-serif; text-align: center; font-weight: bold;">Data Representation: Text, Images and Compression</h1>
+    <div id="text"></div>
+    
+<div id="score"><span class="star">★</span> 0</div>
+
+<script>
+    const originalText = `*Character Code:
+A binary bit-*pattern used to represent a character of *text
+
+Character Set:
+The *collection of all characters & their associated bit-pattern *codes
+
+*ASCII:
+The standard *seven-bit *character set for the Latin alphabet, digits & *symbols (American Standard Code for Information Interchange)
+*Pixel:
+The *smallest element of *colour in a *bitmap image, normally arranged in a two-dimensional grid. It is short for 'picture *element'. If an image's physical size remains constant, then the more pixels there are, the sharper and more *detailed the image is.
+
+*Bitmap:
+A matrix of picture *elements which make up a *digital image composed of tiny blocks of *colour (pixels) which are *encoded one after the other in *binary.
+`;
+
+    
+    const text = originalText.replace(/\*([a-zA-Z0-9]+)([.,!?-]?)/g, function(match, word, punctuation) {
+        return word + punctuation;
+    });
+     // Remove asterisks from display text
+    const words = originalText.split(' ');
+    
+    
+    let lastWord = "";
+    const asteriskedWords = words.filter(word => word.startsWith('*')).map(word => word.substring(1).match(/[a-zA-Z0-9]+/)[0]);
+     // Remove trailing punctuation    
+
+    let score = 0;
+
+    function updateScore() {
+        document.getElementById('score').innerHTML = `<span class="star">★</span> ${score}`;
+    }
+	
+	function replaceRandomOccurrence(text, word, replacement) {
+		let matches = [];
+		let regex = new RegExp(`\\b${word}\\b`, 'g');
+		let match;
+
+		// Find all occurrences of the word
+		while (match = regex.exec(text)) {
+			matches.push(match.index);
+		}
+
+		if (matches.length === 0) return text;
+
+		// Randomly pick one occurrence
+		let randomIndex = matches[Math.floor(Math.random() * matches.length)];
+
+		// Replace that occurrence with the textbox
+		return text.substring(0, randomIndex) + replacement + text.substring(randomIndex + word.length);
+	}	
+
+    function displayTextWithMissingWord() {
+        
+    let missingWord;
+    do {
+        missingWord = asteriskedWords[Math.floor(Math.random() * asteriskedWords.length)];
+    } while (missingWord === lastWord);
+    lastWord = missingWord;
+    
+	const displayText = replaceRandomOccurrence(
+		text, 
+		missingWord, 
+		`<span class="missing">${missingWord.charAt(0)}<input type="text" data-word="${missingWord}" value="" size="${missingWord.length - 2}" autofocus>${missingWord.charAt(missingWord.length - 1)}</span>`
+	);
+        
+    document.getElementById('text').innerHTML = displayText;
+    document.querySelector('input[type="text"]').focus();  // Add focus programmatically
+    
+
+        const inputBox = document.querySelector('input[type="text"]');
+        inputBox.addEventListener('keyup', function(event) {
+            if (event.key === 'Enter') {
+                const userAnswer = missingWord.charAt(0) + inputBox.value + missingWord.charAt(missingWord.length - 1);
+				
+				if (/^\d+$/.test(missingWord)) {
+					// if missingWord is only digits
+					isCorrect = userAnswer === missingWord;
+				} else {
+					// tolerate repeating the given letters from the start or end of the word & ignore case
+					isCorrect = userAnswer.toUpperCase().includes(missingWord.toUpperCase());
+				}
+				
+                if (isCorrect) {
+                    score++;
+                    updateScore();
+                    displayTextWithMissingWord();
+                } else {
+                    score = 0;
+                    updateScore();
+                    inputBox.classList.add('wrong');
+                }
+            }
+        });
+
+        inputBox.addEventListener('input', function() {
+            inputBox.classList.remove('wrong');
+        });
+    }
+
+    displayTextWithMissingWord();
+</script>
+</body>
+</html>
